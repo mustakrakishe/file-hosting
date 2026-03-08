@@ -1,5 +1,26 @@
 services:
+  mysql:
+    image: mysql:8.3
+    environment:
+      MYSQL_ROOT_PASSWORD: supersecret
+      MYSQL_USER: $DB_USERNAME
+      MYSQL_PASSWORD: $DB_PASSWORD
+      MYSQL_DATABASE: $DB_DATABASE
+    ports:
+      - 3306:3306
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: mysql -u $$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE
+      interval: 3s
+      timeout: 3s
+      retries: 5
+      start_period: 5m
+
   php:
+    depends_on:
+      mysql:
+        condition: service_healthy
     build:
       dockerfile: ./docker/php/Dockerfile
       context: .
