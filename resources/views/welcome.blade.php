@@ -22,6 +22,34 @@
             </div>
         @endif
 
+        <div class="d-flex justify-content-center">
+            <form action="{{ route('files.upload') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="mb-3">
+                    <label for="formFileMultiple" class="form-label">PDF or DOCX (Max 10MB)</label>
+                    <div class="input-group">
+                        <input class="form-control @error('files') is-invalid @enderror" type="file" name="files[]" multiple>
+
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+
+                        @error('files')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+
+                        @if ($errors->has('files.*'))
+                            <div class="invalid-feedback d-block">
+                                @foreach ($errors->get('files.*') as $messages)
+                                    @foreach ($messages as $message)
+                                        <div class="d-block">{{ $message }}</div>
+                                    @endforeach
+                                @endforeach
+                            </div>
+                        @endif
+                </div>
+            </form>
+        </div>
+
         @foreach ($files as $file)
         <ul class="list-group list-group-horizontal justify-content-center">
             <li class="list-group-item w-100">{{ $file->name }}</li>
