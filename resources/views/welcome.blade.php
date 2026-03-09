@@ -21,6 +21,15 @@
                 {{ session('status') }}
             </div>
         @endif
+
+        @foreach ($files as $file)
+        <ul class="list-group list-group-horizontal justify-content-center">
+            <li class="list-group-item w-100">{{ $file->name }}</li>
+            <li class="list-group-item">{{ $file->created_at }}</li>
+        </ul>
+        @endforeach
+
+        {{ $files->links() }}
     </div>
 </body>
 
