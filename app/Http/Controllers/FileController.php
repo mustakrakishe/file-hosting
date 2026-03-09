@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\File\UploadRequest;
+use App\Jobs\File\Store;
 use App\Models\File;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 class FileController extends Controller
@@ -17,29 +19,32 @@ class FileController extends Controller
 
     public function upload(UploadRequest $request)
     {
+        $failedFiles = [];
+
         /** @var UploadedFile $file */
         foreach ($request->file('files') as $file) {
-            $path = $file->store('uploads');
-
-            if ($path) {
-                File::create([
-                    'name' => $file->getClientOriginalName(),
-                    'path' => $path,
-                ]);
-            } else {
-                $unsavedFiles[] = $file;
+            $path = $file->store('temp');
+        
+            if (!$path) {
+                $failedFiles[] = $file;
+                continue;
             }
+
+            Store::dispatch($path, $file->getClientOriginalName());
         }
 
-        $redirect = redirect()->route('files.index');
+        $status = match ($failedFiles === []) {
+            true => 'Files are queued for storing successfully!',
+            false => sprintf(
+                'Some files failed to upload: %s',
+                implode(', ', array_map(
+                    fn ($file) => $file->getClientOriginalName(),
+                    $failedFiles
+                ))
+            ),
+        };
 
-        if (isset($unsavedFiles)) {
-            $redirect->with('status', 'Some files could not be uploaded: ' . implode(', ', array_map(fn ($file) => $file->getClientOriginalName(), $unsavedFiles)));
-        } else {
-            $redirect->with('status', 'Files were uploaded successfully!');
-        }
-
-        return $redirect;
+        return redirect()->route('files.index')->with('status', $status);
     }
 
     public function delete(File $file)
