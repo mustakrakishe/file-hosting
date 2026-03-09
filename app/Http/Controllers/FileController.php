@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\File\UploadRequest;
 use App\Models\File;
+use Illuminate\Support\Facades\Storage;
 
 class FileController extends Controller
 {
@@ -39,5 +40,14 @@ class FileController extends Controller
         }
 
         return $redirect;
+    }
+
+    public function delete(File $file)
+    {
+        if (Storage::delete($file->path) && $file->delete()) {
+            return redirect()->route('files.index')->with('status', 'File deleted successfully!');
+        }
+
+        return redirect()->route('files.index')->with('status', 'Failed to delete the file.');
     }
 }

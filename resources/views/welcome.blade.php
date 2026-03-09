@@ -54,6 +54,13 @@
         <ul class="list-group list-group-horizontal justify-content-center">
             <li class="list-group-item w-100">{{ $file->name }}</li>
             <li class="list-group-item">{{ $file->created_at }}</li>
+            <li class="list-group-item">
+                <form action="{{ route('files.delete', $file->id) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </li>
         </ul>
         @endforeach
 
